@@ -17,7 +17,7 @@ class PrintingListener(twitter_monitor.JsonStreamListener):
 terms_filename = "tracking_terms.txt"
 
 # How often to check the file for new terms
-poll_interval = 15
+poll_interval = 30
 
 # Your twitter API credentials
 api_key = '6g9JBMkTpukVlRFW7Es5gJci0'

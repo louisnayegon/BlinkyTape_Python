@@ -2,15 +2,13 @@
 import tweepy
 import twitter_monitor
 import json
-import time
 
 
 class PrintingListener(twitter_monitor.JsonStreamListener):
-
     def on_status(self, status):
         text = status['text']
-        print u'hello:{}'.format(text)
-        #print json.dumps(status, indent=3)
+        print unicode(text)
+        # print json.dumps(status, indent=3)
 
     def on_limit(self, track):
         print "Horrors, we lost %d tweets!" % track
@@ -37,12 +35,15 @@ checker.update_tracking_terms()
 
 # Start and maintain the streaming connection...
 stream = twitter_monitor.DynamicTwitterStream(auth, listener, checker)
-while True:
+
+loop = True
+while loop:
     try:
         # Loop and keep reconnecting in case something goes wrong
         # Note: You may annoy Twitter if you reconnect too often under some conditions.
         stream.start_polling(poll_interval)
-    except Exception as e:
-        print e
+    except KeyboardInterrupt:
+        loop = False
+        stream.stop_polling()
+    except:
         time.sleep(1)  # to avoid craziness with Twitter
-    

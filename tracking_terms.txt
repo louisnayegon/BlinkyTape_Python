@@ -1,4 +1,4 @@
-DigiCatapult
-DigitalCatapult
-Tweetsmas
-xfactor
+#IOT
+#privacy
+#copyright
+#opendata

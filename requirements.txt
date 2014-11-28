@@ -1,3 +1,4 @@
 pyserial
 ipython
 twitter-monitor
+tornado==4.0.2

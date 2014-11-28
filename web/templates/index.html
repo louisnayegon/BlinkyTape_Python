@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>Hack Day Merry Tweetmas</title>
+</head>
+<body>
+    <div id="container">
+        <header>
+            <h1>Merry Tweetmas</h1>
+        </header>
+        <div id="main">
+            <table id="tags">
+                {% for key, value in twitter_tags.items() %}
+                <tr>
+                    <td>{{key}}</td>
+                    <td>{{value['red']}}</td>
+                    <td>{{value['green']}}</td>
+                    <td>{{value['blue']}}</td>
+                    <td>
+                        <button id="btn_{{key}}" type="button">edit...</button>
+                        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+                        <script>
+                            $("#btn_{{key}}").click(function () {
+                                $.ajax({
+                                    type: 'GET',
+                                    url: "/edit?tag={{key}}"
+                                });
+                            });
+                        </script>
+                    </td>
+                </tr>
+                {% end %}
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -16,6 +16,7 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/", tornado.web.RedirectHandler, {"url": r"/tags"}),
+            (r"/restart", RestartHandler),
             (r"/tags", MainHandler),
             (r"/tags/edit", EditHandler),
         ]
@@ -57,6 +58,11 @@ class EditHandler(tornado.web.RequestHandler):
         twitter_tags[tag]['red'] = self.get_argument('red')
         twitter_tags[tag]['green'] = self.get_argument('green')
         twitter_tags[tag]['blue'] = self.get_argument('blue')
+        self.redirect("/tags", status=303)
+
+
+class RestartHandler(tornado.web.RequestHandler):
+    def get(self):
         self.redirect("/tags", status=303)
 
 

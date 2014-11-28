@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import tweepy
 import twitter_monitor
+from twitter_tags import twitter_tags
 import optparse
 from BlinkyTape import BlinkyTape
 from collections import deque
@@ -102,14 +103,9 @@ class FourHorsesVisualisation:
     def match(self, strings):
         cleaned = [x.lower() for x in strings]
 
-        if "iot" in cleaned:
-            return 255, 0, 0
-        if "privacy" in cleaned:
-            return 0, 255, 0
-        if "copyright" in cleaned:
-            return 0, 0, 255
-        if "opendata" in cleaned:
-            return 128, 128, 128
+        for key, value in self.twitter_tags:
+            if key.lower() in cleaned:
+                return value['red'], value['green'], value['blue']
 
 
 class AwesomeListener(twitter_monitor.JsonStreamListener):
@@ -128,6 +124,28 @@ class AwesomeListener(twitter_monitor.JsonStreamListener):
         pass
 
 
+class DictionaryTermChecker(twitter_monitor.checker.TermChecker):
+    """
+    Checks for tracked terms in a file.
+    """
+
+    def __init__(self, dictionary):
+        super(DictionaryTermChecker, self).__init__()
+        self.dictionary = dictionary
+
+    def update_tracking_terms(self):
+        """
+        Terms must be one-per-line.
+        Blank lines will be skipped.
+        """
+        # build a set of terms
+        new_terms = set()
+        for key in self.dictionary:
+            new_terms.add('#{}'.format(key))
+
+        return set(new_terms)
+
+
 def start():
     terms_filename = "tracking_terms.txt"  # How often to check the file for new terms
     poll_interval = 30
@@ -140,6 +158,8 @@ def start():
 
     auth = tweepy.OAuthHandler(api_key, api_secret)
     auth.set_access_token(access_token, access_token_secret)
+    checker = DictionaryTermChecker(dictionary=twitter_tags)
+    checker.update_tracking_terms()
 
     # Construct your own subclasses here instead
 
@@ -148,8 +168,6 @@ def start():
 
     vis.start()
 
-    checker = twitter_monitor.checker.FileTermChecker(filename=terms_filename)
-    checker.update_tracking_terms()
 
     # Start and maintain the streaming connection...
     stream = twitter_monitor.DynamicTwitterStream(auth, listener, checker)

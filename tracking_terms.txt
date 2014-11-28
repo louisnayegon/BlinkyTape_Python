@@ -1,4 +1,0 @@
-#IOT
-#privacy
-#copyright
-#opendata

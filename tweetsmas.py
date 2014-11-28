@@ -16,10 +16,16 @@ class Light:
         self.ttl = ttl
 
     def tick(self):
+        if self.rgb == (0, 0, 0):
+            return False
+
         self.count += 1
         if self.count >= self.ttl:
             self.rgb = (0, 0, 0)
             self.count = 0
+            return False
+
+        return True
 
     def set(self, rgb):
         self.rgb = rgb
@@ -32,6 +38,7 @@ class Strip:
         self.lights = deque([Light() for i in range(self.num_of_lights)])
         self.rgb = []
         self.blinky = blinky
+        self.alive = 0
 
     def submit(self):
         self.process()
@@ -39,9 +46,10 @@ class Strip:
 
     def process(self):
         self.rgb = []
+        self.alive = 0
 
         for light in self.lights:
-            light.tick()
+            self.alive += light.tick()
             self.rgb.append(light.rgb)
 
         return self.rgb
@@ -65,6 +73,9 @@ class FourHorsesVisualisation:
         self.t = None
         self.blinky = BlinkyTape(port)
         self.strip1 = Strip(self.blinky)
+        self.min_tick = 0.01
+        self.max_tick = 0.1
+        self.multiplier = (self.max_tick - self.min_tick) / self.strip1.num_of_lights
 
     def on_tweet(self, tweet):
         hashtags = []
@@ -74,18 +85,19 @@ class FourHorsesVisualisation:
 
         print hashtags
 
-        m = self.match(hashtags)
-        self.strip1.set_rgb(0, m)
+        if hashtags:
+            m = self.match(hashtags)
+            self.strip1.set_rgb(0, m)
 
-    def start(self):
-        self.t = Timer(0.02, self.tick)
+    def start(self, time=0.05):
+        self.t = Timer(time, self.tick)
         self.t.start()
 
     def tick(self):
         self.strip1.cycle()
         self.strip1.submit()
         self.blinky.show()
-        self.start()
+        self.start(self.max_tick - (self.multiplier*self.strip1.alive))
 
     def match(self, strings):
         cleaned = [x.lower() for x in strings]

@@ -16,7 +16,7 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/", MainHandler),
-            (r"/edit/", EditHandler),
+            (r"/edit", EditHandler),
         ]
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
@@ -33,6 +33,7 @@ class MainHandler(tornado.web.RequestHandler):
             "index.html",
             twitter_tags=twitter_tags
         )
+        self.set_status(200)
 
 
 class EditHandler(tornado.web.RequestHandler):
@@ -44,6 +45,7 @@ class EditHandler(tornado.web.RequestHandler):
                 twitter_tags=twitter_tags,
                 tag=tag
             )
+            self.set_status(200)
         # will do some searching
         except AssertionError:
             self.write("no params")

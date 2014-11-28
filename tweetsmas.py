@@ -10,8 +10,20 @@ from threading import Timer
 
 
 class Light:
-    def __init__(self):
+    def __init__(self, ttl=10000):
         self.rgb = (0, 0, 0)
+        self.count = 0
+        self.ttl = ttl
+
+    def tick(self):
+        self.count += 1
+        if self.count >= self.ttl:
+            self.rgb = (0, 0, 0)
+            self.count = 0
+
+    def set(self, rgb):
+        self.rgb = rgb
+        self.count = 0
 
 
 class Strip:
@@ -22,19 +34,23 @@ class Strip:
         self.blinky = blinky
 
     def submit(self):
-        self.to_array()
+        self.process()
         self.blinky.send_list(self.rgb)
 
-    def to_array(self):
+    def process(self):
         self.rgb = []
 
         for light in self.lights:
+            light.tick()
             self.rgb.append(light.rgb)
 
         return self.rgb
 
-    def set_rgb(self, index, r, g, b):
+    def set_r_g_b(self, index, r, g, b):
         self.lights[index].rgb = (r, g, b)
+
+    def set_rgb(self, index, rgb):
+        self.lights[index].set(rgb)
 
     def cycle(self):
         light = self.lights.popleft()
@@ -56,8 +72,10 @@ class FourHorsesVisualisation:
         for obj in tweet['entities']['hashtags']:
             hashtags.append(obj['text'])
 
-        self.strip1.set_rgb(0, 0, 255, 0)
         print hashtags
+
+        m = self.match(hashtags)
+        self.strip1.set_rgb(0, m)
 
     def start(self):
         self.t = Timer(0.02, self.tick)
@@ -68,6 +86,18 @@ class FourHorsesVisualisation:
         self.strip1.submit()
         self.blinky.show()
         self.start()
+
+    def match(self, strings):
+        cleaned = [x.lower() for x in strings]
+
+        if "iot" in cleaned:
+            return 255, 0, 0
+        if "privacy" in cleaned:
+            return 0, 255, 0
+        if "copyright" in cleaned:
+            return 0, 0, 255
+        if "opendata" in cleaned:
+            return 128, 128, 128
 
 
 class AwesomeListener(twitter_monitor.JsonStreamListener):
@@ -123,19 +153,8 @@ def start():
             loop = False
             stream.stop_polling()
         except Exception as e:
+            print e
             time.sleep(1)  # to avoid craziness with Twitter
-
-
-def test():
-    blinky = BlinkyTape(options.portname)
-    strip1 = Strip(blinky)
-    strip1.set_rgb(0, 0, 255, 0)
-    strip1.submit()
-
-    while True:
-        blinky.show()
-        strip1.cycle()
-        strip1.submit()
 
 # ----------------------------------------
 parser = optparse.OptionParser()

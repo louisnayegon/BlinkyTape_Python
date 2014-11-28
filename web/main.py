@@ -51,6 +51,14 @@ class EditHandler(tornado.web.RequestHandler):
         except AssertionError:
             self.write("no params")
 
+    def post(self):
+        tag = self.get_argument('tag')
+        import pdb; pdb.set_trace()
+        twitter_tags[tag]['red'] = self.get_argument('red')
+        twitter_tags[tag]['green'] = self.get_argument('green')
+        twitter_tags[tag]['blue'] = self.get_argument('blue')
+        self.redirect("/tags", status=303)
+
 
 def main():
     tornado.options.parse_command_line()
